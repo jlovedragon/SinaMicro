@@ -29,13 +29,9 @@ for k in range(0, 100):
     print "-----", proxy
     proxies = {'http' : proxy}
     try:
-        respond = requests.get(url, proxies=proxies)
+        respond = requests.get(ipCheckUrl, proxies=proxies)
     except:
         continue
     respond.encoding = 'gb2312'
     print respond.status_code
-#    opener = urllib2.build_opener( urllib2.ProxyHandler({'http': proxy}) )
-#    urllib2.install_opener(opener)
-#    sContent = urllib2.urlopen(ipCheckUrl)
-#    print sContent.read()
     print "----------------------------------"
