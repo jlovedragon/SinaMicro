@@ -20,24 +20,32 @@ class WeiboLogin:
     def login(self):
         self.EnableProxies(self.enableProxy)
 
-    def EnableProxies(self):
+    def enableProxies(self):
         pass
 
-driver = webdriver.Firefox()
-driver.get("http://login.weibo.cn/login/")
-username = driver.find_element_by_css_selector("input[name=mobile]")
-username.send_keys("18601346913")
-password = driver.find_element_by_css_selector('input[name^=password]')
-password.send_keys("testsina")
-rem = driver.find_element_by_css_selector('input[name=remember]')
-rem.click()
-submit = driver.find_element_by_css_selector('input[name=submit]')
-submit.click()
-cookieSet = driver.get_cookies()
-for iCookie in cookieSet:
-    name = iCookie['name']
-    value = iCookie['value']
-    if name == 'gsid_CTandWM':
-        cookie = dict(name=value)
-driver.close()
+    def getCookie(self):
+        driver = webdriver.Firefox()
+        driver.get("http://login.weibo.cn/login/")
+        username = driver.find_element_by_css_selector("input[name=mobile]")
+        username.send_keys(self.username)
+        password = driver.find_element_by_css_selector('input[name^=password]')
+        password.send_keys(self.password)
+        rem = driver.find_element_by_css_selector('input[name=remember]')
+        rem.click()
+        submit = driver.find_element_by_css_selector('input[name=submit]')
+        submit.click()
+        cookieSet = driver.get_cookies()
+        for iCookie in cookieSet:
+            name = iCookie['name']
+            value = iCookie['value']
+            if name == 'gsid_CTandWM':
+                cookie = dict(name=value)
+        driver.close()
+        return cookie
+
+
+if __name__ == '__main__':
+    weiboLogin = WeiboLogin('18601346913', 'testsina')
+    cookie = weiboLogin.getCookie()
+    print cookie
 
