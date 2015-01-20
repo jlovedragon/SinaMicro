@@ -9,7 +9,7 @@ import os
 
 from login.WeiboLogin import WeiboLogin
 
-dirName = '/home/quentin/data/weibo/'
+dirName = '/Users/quantin/data/weibo/'
 startUrl = 'http://weibo.cn/hntv'
 userFile = open(dirName + 'userinfo.txt', 'a+')
 postHeader = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0'}
@@ -17,7 +17,7 @@ postHeader = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/2010010
 weiboLogin = WeiboLogin('18601346913', 'testsina')
 cookie = weiboLogin.getCookie()
 #respond = requests.post(startUrl, data=postHeader, cookies=cookie)
-respond = requests.post(startUrl, cookies=cookie)
+respond = requests.get(startUrl, cookies=cookie)
 respond.encoding = 'utf-8'
 #print respond.text
 
