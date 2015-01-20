@@ -35,13 +35,17 @@ class WeiboLogin:
         submit = driver.find_element_by_css_selector('input[name=submit]')
         submit.click()
         cookieSet = driver.get_cookies()
+        cookies = {}
         for iCookie in cookieSet:
             name = iCookie['name']
             value = iCookie['value']
-            if name == 'gsid_CTandWM':
-                cookie = dict(name=value)
+            cookies[name] = value
+
+            # if name == 'gsid_CTandWM':
+                # cookie = dict(name=value)
         driver.close()
-        return cookie
+        # print cookies
+        return cookies
 
 
 if __name__ == '__main__':
