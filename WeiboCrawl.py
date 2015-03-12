@@ -7,11 +7,10 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import datetime
 import time
 
-from login.WeiboLogin import WeiboLogin
-
-# # 存放文件目录
+# 存放文件目录
 # dirName = '/Users/quantin/data/weibo/01/'
 
 # # 用户微博内容文件
@@ -109,7 +108,7 @@ def getFollowsList(userId, cookies):
             fIdPageOne = fTagPageOne['href'][34:44]
             followsList.append(fIdPageOne)
     for i in range(2, followPageNum + 1):
-        time.sleep(10)
+        time.sleep(5)
         followsUrl = pageNumUrl + str(i)
         followsRespond = requests.get(followsUrl, cookies=cookies)
         followsRespond.encoding = 'utf-8'
@@ -123,7 +122,7 @@ def getFollowsList(userId, cookies):
             followsList.append(fId)
     return followsList
 
-def getUserContentById(userId, cookies, contentFile):
+def getUserContentById(userId, cookies, contentFile, fromTimeStamp):
     "Get UserInfo By Id"
     userContentUrl = 'http://weibo.cn/u/' + userId + '?page='
     # 先解析第一页
@@ -133,18 +132,62 @@ def getUserContentById(userId, cookies, contentFile):
     userContentPageOneSoup = BeautifulSoup(userRespPageOne.text, 'lxml')
     contentTagPageOne = (userContentPageOneSoup.find_all(id=re.compile("M_")))
     for cTagPageOne in contentTagPageOne:
-        contentFile.write(cTagPageOne.text.encode('utf-8') + '\n')
-        contentFile.flush()
+        try:
+            microTimeStamp = getTimeStamp(cTagPageOne)
+        except:
+            continue
+        if microTimeStamp > 1425139200:
+            print '----------', datetime.datetime.fromtimestamp(microTimeStamp)
+            contentFile.write(cTagPageOne.text.encode('utf-8') + '\n')
+            contentFile.flush()
+        else:
+            break
     for iPage in range(2, 3):
-        time.sleep(10)
+        time.sleep(5)
         contentUrl = userContentUrl + str(iPage)
         contentRespond = requests.get(contentUrl, cookies=cookies)
         contentRespond.encoding = 'utf-8'
         contentSoup = BeautifulSoup(contentRespond.text, 'lxml')
         contentTag = (contentSoup.find_all(id=re.compile("M_")))
         for cTag in contentTag:
-            contentFile.write(cTag.text.encode('utf-8') + '\n')
-            contentFile.flush()
+            try:
+                microTimeStamp = getTimeStamp(cTag)
+            except:
+                continue
+            if microTimeStamp > 1425139200:
+                print '----------', datetime.datetime.fromtimestamp(microTimeStamp)
+                contentFile.write(cTag.text.encode('utf-8') + '\n')
+                contentFile.flush()
+            else:
+                break
+
+def getTimeStamp(cTag):
+    # 提取出微博发表的时间进行判断，如果大于抓取的指定时间则抓取，小于则不予抓取并退出循环
+    microContentList = cTag.find_all('span', 'ct')[0].text.encode('utf-8').split(" ")
+    spanCtLen = len(microContentList)
+    # print "长度为", spanCtLen
+    if spanCtLen == 2 and microContentList[0].find('前') != -1:
+        microDate = datetime.datetime.now().strftime("%Y-%m-%d")
+        minuteIndex = microContentList[0].find("分钟")
+        minutes = int(microContentList[0][:minuteIndex])
+        # print minutes
+        microTimeStamp = long(time.time()) - minutes * 60;
+    else:
+        microDate = microContentList[0]
+        # microTime = microContentList[1][:microContentList[1].find("来自")]
+        microTime = microContentList[1][:5]
+        # microOrigin = microContentList[2]
+        # print 'microDate: ', microDate
+        # print 'microTime: ', microTime
+        if microDate.find("今天") != -1:
+            microDate = datetime.datetime.now().strftime("%Y-%m-%d")  #str
+        if microDate.find("-") == -1:
+            date_time = '2015年' + microDate
+            microDate = datetime.datetime.strptime(date_time, '%Y年%m月%d日').strftime("%Y-%m-%d")
+        strTime = microDate + ' ' + microTime
+        print strTime
+        microTimeStamp = long(time.mktime((datetime.datetime.strptime(strTime, '%Y-%m-%d %H:%M')).timetuple()))
+    return microTimeStamp
 
 if __name__ == '__main__':
     '''
@@ -155,4 +198,3 @@ if __name__ == '__main__':
     '''
     # getUserContentById('1266321801', cookies2)
     # contentFile.close()
-
